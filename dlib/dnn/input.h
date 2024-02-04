@@ -469,6 +469,96 @@ namespace dlib
 
 // ----------------------------------------------------------------------------------------
 
+    template <long N, long NR, long NC, typename MM, typename L>
+    class input<matrix<matrix<float, N, 1>,NR,NC,MM,L>>
+    {
+    public:
+        typedef matrix<matrix<float, N, 1>,NR,NC,MM,L> input_type;
+
+        input() {}
+
+        template <typename mm>
+        input(const input<array2d<float,mm>>&) {}
+
+        bool image_contained_point ( const tensor& data, const point& p) const { return get_rect(data).contains(p); }
+        drectangle tensor_space_to_image_space ( const tensor& /*data*/, drectangle r) const { return r; }
+        drectangle image_space_to_tensor_space ( const tensor& /*data*/, double /*scale*/, drectangle r ) const { return r; }
+
+        template <typename forward_iterator>
+        void to_tensor (
+            forward_iterator ibegin,
+            forward_iterator iend,
+            resizable_tensor& data
+        ) const
+        {
+            DLIB_CASSERT(std::distance(ibegin,iend) > 0);
+            const auto nr = ibegin->nr();
+            const auto nc = ibegin->nc();
+            // make sure all the input matrices have the same dimensions
+            for (auto i = ibegin; i != iend; ++i)
+            {
+                DLIB_CASSERT(i->nr()==nr && i->nc()==nc,
+                    "\t input::to_tensor()"
+                    << "\n\t All matrices given to to_tensor() must have the same dimensions."
+                    << "\n\t nr: " << nr
+                    << "\n\t nc: " << nc
+                    << "\n\t i->nr(): " << i->nr()
+                    << "\n\t i->nc(): " << i->nc()
+                );
+            }
+
+            // initialize data to the right size to contain the stuff in the iterator range.
+            data.set_size(std::distance(ibegin,iend), N, nr, nc);
+
+            const size_t offset = nr*nc;
+            auto ptr = data.host();
+            for (auto i = ibegin; i != iend; ++i)
+            {
+                for (long r = 0; r < nr; ++r)
+                {
+                    for (long c = 0; c < nc; ++c)
+                    {
+                        auto& temp = (*i)(r,c);
+                        auto p = ptr++;
+                        for (long j = 0; j < temp.size(); ++j)
+                        {
+                            *p = temp(j);
+                            p += offset;
+                        }
+                    }
+                }
+                ptr += offset*(data.k()-1);
+            }
+
+        }
+
+        friend void serialize(const input& /*item*/, std::ostream& out)
+        {
+            serialize("input<matrix>", out);
+        }
+
+        friend void deserialize(input& /*item*/, std::istream& in)
+        {
+            std::string version;
+            deserialize(version, in);
+            if (version != "input<matrix>")
+                throw serialization_error("Unexpected version found while deserializing dlib::input.");
+        }
+
+        friend std::ostream& operator<<(std::ostream& out, const input& /*item*/)
+        {
+            out << "input<matrix>";
+            return out;
+        }
+
+        friend void to_xml(const input& /*item*/, std::ostream& out)
+        {
+            out << "<input/>\n";
+        }
+    };
+
+// ----------------------------------------------------------------------------------------
+
     template <typename T, long NR, long NC, typename MM, typename L>
     class input<matrix<T,NR,NC,MM,L>> 
     {

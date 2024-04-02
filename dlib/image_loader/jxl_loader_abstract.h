@@ -1,7 +1,7 @@
-// Copyright (C) 2008  Davis E. King (davis@dlib.net), Nils Labugt
+// Copyright (C) 2024  Davis E. King (davis@dlib.net), Adrià Arrufat
 // License: Boost Software License   See LICENSE.txt for the full license.
-#undef DLIB_PNG_IMPORT_ABSTRACT
-#ifdef DLIB_PNG_IMPORT_ABSTRACT
+#undef DLIB_JXL_IMPORT_ABSTRACT
+#ifdef DLIB_JXL_IMPORT_ABSTRACT
 
 #include "image_loader_abstract.h"
 #include "../algs.h"
@@ -12,101 +12,106 @@
 namespace dlib
 {
 
-    class png_loader : noncopyable
+    class jxl_loader : noncopyable
     {
         /*!
-            INITIAL VALUE
-                Defined by the constructors
-
             WHAT THIS OBJECT REPRESENTS
-                This object represents a class capable of loading PNG image files.
-                Once an instance of it is created to contain a PNG file from
+                This object represents a class capable of loading JPEG XL image files.
+                Once an instance of it is created to contain a JPEG XL file from
                 disk you can obtain the image stored in it via get_image().
         !*/
 
     public:
 
-        png_loader( 
+        jxl_loader( 
             const char* filename 
         );
         /*!
             ensures
-                - loads the PNG file with the given file name into this object
+                - loads the JPEG XL file with the given file name into this object
             throws
                 - std::bad_alloc
                 - image_load_error
                   This exception is thrown if there is some error that prevents
-                  us from loading the given PNG file.
+                  us from loading the given JPEG XL file.
         !*/
 
-        png_loader( 
+        jxl_loader( 
             const std::string& filename 
         );
         /*!
             ensures
-                - loads the PNG file with the given file name into this object
+                - loads the JPEG XL file with the given file name into this object
             throws
                 - std::bad_alloc
                 - image_load_error
                   This exception is thrown if there is some error that prevents
-                  us from loading the given PNG file.
+                  us from loading the given JPEG XL file.
         !*/
 
-        png_loader( 
+        jxl_loader( 
             const dlib::file& f 
         );
         /*!
             ensures
-                - loads the PNG file with the given file name into this object
+                - loads the JPEG XL file with the given file name into this object
             throws
                 - std::bad_alloc
                 - image_load_error
                   This exception is thrown if there is some error that prevents
-                  us from loading the given PNG file.
+                  us from loading the given JPEG XL file.
         !*/
 
-        png_loader( 
-            const unsigned char* image_buffer,
-            size_t buffer_size
+        jxl_loader( 
+            const unsigned char* imgbuffer,
+            size_t buffersize
         );
         /*!
             ensures
-                - loads the PNG from memory image_buffer of size buffer_size into this object
+                - loads the JPEG XL from memory imgbuffer of size buffersize into
+                  this object
             throws
                 - image_load_error
                   This exception is thrown if there is some error that prevents
-                  us from loading the given PNG buffer.
+                  us from loading the given JPEG XL buffer.
         !*/
 
-        png_loader( 
-            std::istream& in
-        );
-        /*!
-            ensures
-                - loads the PNG file from the c++ IO stream into this object
-            throws
-                - image_load_error
-                  This exception is thrown if there is some error that prevents
-                  us from loading the given PNG buffer.
-        !*/
-
-        ~png_loader(
+        ~jxl_loader(
         );
         /*!
             ensures
                 - all resources associated with *this has been released
         !*/
 
+        template<
+            typename image_type 
+            >
+        void get_image( 
+            image_type& img
+        ) const;
+        /*!
+            requires
+                - image_type == an image object that implements the interface defined in
+                  dlib/image_processing/generic_image.h 
+            ensures
+                - loads the JPEG XL image stored in this object into img
+        !*/
+
+    };
+
+// ----------------------------------------------------------------------------------------
+
         bool is_gray(
         ) const;
         /*!
             ensures
-                - if (this object contains a grayscale image without an alpha channel) then
+                - if (this object contains a grayscale image without an alpha channel)
+                  then
                     - returns true
                 - else
                     - returns false
         !*/
-        
+
         bool is_graya(
         ) const;
         /*!
@@ -116,7 +121,7 @@ namespace dlib
                 - else
                     - returns false
         !*/
-        
+
         bool is_rgb(
         ) const;
         /*!
@@ -142,7 +147,7 @@ namespace dlib
         /*!
             ensures
                 - returns the number of bits per channel in the image contained by this
-                  object.  The possible values are 8 or 16.
+                  object.
         !*/
 
         long nr (
@@ -161,28 +166,12 @@ namespace dlib
                   object.
         !*/
 
-        template<
-            typename image_type 
-            >
-        void get_image( 
-            image_type& img
-        ) const;
-        /*!
-            requires
-                - image_type == an image object that implements the interface defined in
-                  dlib/image_processing/generic_image.h 
-            ensures
-                - loads the PNG image stored in this object into img
-        !*/
-
-    };
-
 // ----------------------------------------------------------------------------------------
 
     template <
         typename image_type
         >
-    void load_png (
+    void load_jxl (
         image_type& image,
         const std::string& file_name
     );
@@ -191,49 +180,44 @@ namespace dlib
             - image_type == an image object that implements the interface defined in
               dlib/image_processing/generic_image.h 
         ensures
-            - performs: png_loader(file_name).get_image(image);
+            - performs: jxl_loader(file_name).get_image(image);
     !*/
 
-// ----------------------------------------------------------------------------------------
-
     template <
-        typename image_type,
-        typename Byte
+        typename image_type
         >
-    void load_png (
+    void load_jxl (
         image_type& image,
-        const Byte* image_buffer,
-        size_t buffer_size
+        const unsigned char* imgbuff,
+        size_t imgbuffsize
     );
     /*!
         requires
             - image_type == an image object that implements the interface defined in
               dlib/image_processing/generic_image.h 
-            - Byte is either char, int8_t, uint8_t or std::byte
         ensures
-            - performs: png_loader(image_buffer, buffer_size).get_image(image);
+            - performs: jxl_loader(imgbuff, imgbuffsize).get_image(image);
     !*/
-    
-// ----------------------------------------------------------------------------------------
 
     template <
-      class image_type
-    >
-    void load_png (
-        image_type& img,
-        std::istream& in
+        typename image_type
+        >
+    void load_jxl (
+        image_type& image,
+        const char* imgbuff,
+        size_t imgbuffsize
     );
     /*!
         requires
             - image_type == an image object that implements the interface defined in
               dlib/image_processing/generic_image.h 
-            - in is an input stream containing a complete PNG encoded image
         ensures
-            - Reads and ecodes the PNG file located in stream
+            - performs: jxl_loader((unsigned char*)imgbuff, imgbuffsize).get_image(image);
     !*/
 
 // ----------------------------------------------------------------------------------------
 
 }
 
-#endif // DLIB_PNG_IMPORT_ABSTRACT
+#endif // DLIB_JXL_IMPORT_ABSTRACT
+

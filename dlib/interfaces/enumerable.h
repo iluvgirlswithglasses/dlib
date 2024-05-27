@@ -3,6 +3,8 @@
 #ifndef DLIB_ENUMERABLe_INTERFACE_
 #define DLIB_ENUMERABLe_INTERFACE_
 
+#include <cstddef>
+
 namespace dlib
 {
 

@@ -357,7 +357,29 @@ namespace dlib
             const tensor& gamma,
             tensor& src_grad,
             tensor& gamma_grad,
-            tensor& beta_grad
+            tensor& beta_grad,
+            resizable_tensor& dmeans,
+            resizable_tensor& dvars
+        );
+
+   // -----------------------------------------------------------------------------------
+
+        void rms_normalize(
+            const double eps,
+            resizable_tensor& dest,
+            resizable_tensor& scale,
+            const tensor& src,
+            const tensor& gamma
+        );
+
+        void rms_normalize_gradient(
+            const tensor& gradient_input,
+            const tensor& scale,
+            const tensor& src,
+            const tensor& gamma,
+            tensor& src_grad,
+            tensor& gamma_grad,
+            resizable_tensor& dscale
         );
 
     // -----------------------------------------------------------------------------------
@@ -524,6 +546,7 @@ namespace dlib
     // ----------------------------------------------------------------------------------------
 
         void reorg (
+            bool add_to,
             tensor& dest,
             const int row_stride,
             const int col_stride,
@@ -531,10 +554,28 @@ namespace dlib
         );
 
         void reorg_gradient (
+            bool add_to,
             tensor& grad,
             const int row_stride,
             const int col_stride,
             const tensor& gradient_input
+        );
+
+    // -----------------------------------------------------------------------------------
+
+        void embeddings(
+            resizable_tensor& dest,
+            const tensor& src,
+            const tensor& embs
+        );
+
+        void embeddings_gradient(
+            const tensor& prev,
+            const tensor& gradient_input,
+            tensor& grads,
+            const tensor& freqs,
+            float learning_rate,
+            bool scale
         );
 
     // ----------------------------------------------------------------------------------------
@@ -548,6 +589,24 @@ namespace dlib
             size_t count_k
         );
 
+    // ----------------------------------------------------------------------------------------
+
+        void copy_tensor(
+            bool add_to,
+            tensor& dest,
+            size_t dk, size_t dnr, size_t dnc,
+            const tensor& src,
+            size_t sk, size_t snr, size_t snc,
+            size_t k, size_t nr, size_t nc
+        );
+ 
+    // ----------------------------------------------------------------------------------------
+
+        void transpose(
+            bool add_to,
+            tensor& dest,
+            const tensor& src
+        );
 
     // ----------------------------------------------------------------------------------------
 
